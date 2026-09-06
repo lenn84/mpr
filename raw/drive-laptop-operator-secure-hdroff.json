@@ -1,0 +1,87 @@
+{
+  "kind": "drive",
+  "project": "MPR",
+  "phase": "M4",
+  "device": "laptop-operator",
+  "mode": "secure",
+  "date": "2026-08-24T22:58:51.604Z",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:153.0) Gecko/20100101 Firefox/153.0",
+  "findings": [
+    {
+      "name": "bind scheduler",
+      "ok": true,
+      "detail": "h2"
+    },
+    {
+      "name": "bind executor",
+      "ok": true,
+      "detail": "h3"
+    },
+    {
+      "name": "bind storage",
+      "ok": true,
+      "detail": "h4"
+    },
+    {
+      "name": "bind channel",
+      "ok": true,
+      "detail": "h5"
+    },
+    {
+      "name": "bind clock",
+      "ok": true,
+      "detail": "h6"
+    },
+    {
+      "name": "bind binder",
+      "ok": true,
+      "detail": "h7"
+    },
+    {
+      "name": "scheduled task came due",
+      "ok": true,
+      "detail": "due"
+    },
+    {
+      "name": "worker computed 20 + 22",
+      "ok": true,
+      "detail": "42"
+    },
+    {
+      "name": "stored the answer",
+      "ok": true,
+      "detail": "stored"
+    },
+    {
+      "name": "read the answer back",
+      "ok": true,
+      "detail": "42"
+    },
+    {
+      "name": "clock ticked after 100ms",
+      "ok": true,
+      "detail": "tick"
+    },
+    {
+      "name": "channel echoed",
+      "ok": true,
+      "detail": "hello world"
+    },
+    {
+      "name": "released executor via binder",
+      "ok": true,
+      "detail": "{\"accepted\":true,\"correlation\":5}"
+    },
+    {
+      "name": "released handle faults as dead",
+      "ok": true,
+      "detail": "dead"
+    },
+    {
+      "name": "re-bound executor computed",
+      "ok": true,
+      "detail": "42"
+    }
+  ],
+  "pass": true
+}

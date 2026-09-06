@@ -1,0 +1,206 @@
+{
+  "project": "MPR",
+  "phase": "M2",
+  "device": "laptop-partner",
+  "mode": "plain",
+  "date": "2026-08-24T17:49:01.062Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6 Safari/605.1.15",
+  "findings": [
+    {
+      "resource": "execution",
+      "id": "workers",
+      "name": "Worker constructor",
+      "value": true,
+      "claim": "A1"
+    },
+    {
+      "resource": "execution",
+      "id": "concurrency",
+      "name": "hardwareConcurrency",
+      "value": 8,
+      "claim": "A1"
+    },
+    {
+      "resource": "execution",
+      "id": "wasm",
+      "name": "WebAssembly object",
+      "value": true,
+      "claim": "A2"
+    },
+    {
+      "resource": "execution",
+      "id": "wasmInstantiate",
+      "name": "Wasm empty-module instantiate",
+      "value": true,
+      "claim": "A2"
+    },
+    {
+      "resource": "execution",
+      "id": "wasmInWorker",
+      "name": "Wasm instantiates inside a worker",
+      "value": true,
+      "claim": "A2"
+    },
+    {
+      "resource": "execution",
+      "id": "moduleWorker",
+      "name": "Module-type workers",
+      "value": true,
+      "claim": "A1"
+    },
+    {
+      "resource": "memory",
+      "id": "isolation",
+      "name": "crossOriginIsolated",
+      "value": false,
+      "claim": "B1"
+    },
+    {
+      "resource": "memory",
+      "id": "sab",
+      "name": "SharedArrayBuffer constructor",
+      "value": false,
+      "claim": "B1"
+    },
+    {
+      "resource": "memory",
+      "id": "sabUsable",
+      "name": "SharedArrayBuffer allocatable",
+      "value": false,
+      "claim": "B1"
+    },
+    {
+      "resource": "memory",
+      "id": "atomics",
+      "name": "Atomics object",
+      "value": true,
+      "claim": "B1"
+    },
+    {
+      "resource": "memory",
+      "id": "deviceMemory",
+      "name": "deviceMemory (GB, coarse)",
+      "value": null,
+      "claim": "B2"
+    },
+    {
+      "resource": "memory",
+      "id": "transfer",
+      "name": "1MB transferable round-trip via worker",
+      "value": true,
+      "claim": "B2"
+    },
+    {
+      "resource": "scheduling",
+      "id": "messageChannel",
+      "name": "MessageChannel",
+      "value": true,
+      "claim": "C1"
+    },
+    {
+      "resource": "scheduling",
+      "id": "idleCallback",
+      "name": "requestIdleCallback",
+      "value": false,
+      "claim": "C1"
+    },
+    {
+      "resource": "scheduling",
+      "id": "animationFrame",
+      "name": "requestAnimationFrame",
+      "value": true,
+      "claim": "C1"
+    },
+    {
+      "resource": "scheduling",
+      "id": "timerDrift",
+      "name": "Mean zero-timeout drift (ms)",
+      "value": 5.3,
+      "claim": "C1"
+    },
+    {
+      "resource": "storage",
+      "id": "estimate",
+      "name": "Origin storage estimate",
+      "value": null,
+      "claim": "D1"
+    },
+    {
+      "resource": "storage",
+      "id": "opfs",
+      "name": "Origin-private filesystem write cycle",
+      "value": false,
+      "claim": "D1"
+    },
+    {
+      "resource": "storage",
+      "id": "idb",
+      "name": "IndexedDB open cycle",
+      "value": true,
+      "claim": "D1"
+    },
+    {
+      "resource": "storage",
+      "id": "caches",
+      "name": "CacheStorage",
+      "value": false,
+      "claim": "D1"
+    },
+    {
+      "resource": "storage",
+      "id": "persisted",
+      "name": "Persistence already granted",
+      "value": null,
+      "claim": "D1"
+    },
+    {
+      "resource": "io",
+      "id": "fetch",
+      "name": "fetch",
+      "value": true,
+      "claim": "E1"
+    },
+    {
+      "resource": "io",
+      "id": "websocket",
+      "name": "WebSocket constructor",
+      "value": true,
+      "claim": "E1"
+    },
+    {
+      "resource": "io",
+      "id": "sse",
+      "name": "EventSource (server-sent events)",
+      "value": true,
+      "claim": "E1"
+    },
+    {
+      "resource": "io",
+      "id": "rtc",
+      "name": "RTCPeerConnection (peer channel, later resolution)",
+      "value": true,
+      "claim": "E2"
+    },
+    {
+      "resource": "io",
+      "id": "webtransport",
+      "name": "WebTransport",
+      "value": false,
+      "claim": "E2"
+    },
+    {
+      "resource": "io",
+      "id": "broadcast",
+      "name": "BroadcastChannel (same-origin bus)",
+      "value": true,
+      "claim": "E1"
+    },
+    {
+      "resource": "io",
+      "id": "online",
+      "name": "navigator.onLine",
+      "value": true,
+      "claim": "E1"
+    }
+  ]
+}

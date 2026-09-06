@@ -1,0 +1,197 @@
+{
+  "kind": "drive",
+  "project": "MPR",
+  "phase": "M7-L6",
+  "device": "headless-node",
+  "mode": "plain",
+  "date": "2026-08-26T18:35:46.071Z",
+  "userAgent": "node v24.18.1 (headless: stop-derivation unit + freshness/decay/§9 with a synthetic signed peer + stop-order race with two real member processes)",
+  "findings": [
+    {
+      "name": "l6-unit: clean chain: no ring stopped",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-unit: after STOP: B is stopped, A is not",
+      "ok": true,
+      "detail": "7FXjeH"
+    },
+    {
+      "name": "l6-unit: single-signed CONTEST-CLOSE does NOT clear B",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-unit: cross-signed CONTEST-CLOSE clears B",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-unit: latestContestCloseTs reports the cross-signed close ts (4000)",
+      "ok": true,
+      "detail": "4000"
+    },
+    {
+      "name": "l6-unit: a later STOP re-blocks the cleared target",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-unit: stale-stop guard: close ts (4000) >= a replayed stale stop ts (3500)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-unit: fresh-stop guard: close ts (4000) < the legitimate new stop ts (5000)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-fresh: A booted on the real stack",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-fresh: B message rendered by petname (bee), freshness established",
+      "ok": true,
+      "detail": "bee"
+    },
+    {
+      "name": "l6-fresh: no stale badge while fresh",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-fresh: soft TTL crossed: stale badge on the peer, by petname",
+      "ok": true,
+      "detail": "bee"
+    },
+    {
+      "name": "l6-fresh: stale badge did not falsely restore (peer still silent)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-fresh: hard TTL crossed: inbound gate engaged (fail-closed fault)",
+      "ok": true,
+      "detail": "fault: refused (peer freshness hard-expired (73h): new inbou"
+    },
+    {
+      "name": "l6-fresh: message from a hard-stale peer is HELD, not rendered",
+      "ok": true,
+      "detail": "rendered 1 vs 1"
+    },
+    {
+      "name": "l6-fresh: §9 no-cover: TTL not extended by the arrival of held traffic (still gated)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-fresh: challenge round-trip RESTORES freshness (badge cleared, by petname)",
+      "ok": true,
+      "detail": "bee"
+    },
+    {
+      "name": "l6-fresh: the HELD message flushes and renders after restore (never dropped)",
+      "ok": true,
+      "detail": "rendered"
+    },
+    {
+      "name": "l6-fresh: §9 relay down: A send QUEUES (store-and-forward), fail-closed not fail-open",
+      "ok": true,
+      "detail": "link is down, message queued for delivery"
+    },
+    {
+      "name": "l6-stop: [a] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [a] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [a] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [a] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "l6-stop: [a] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [a] pre-stop: the counterpart's messages were rendered (flow established)",
+      "ok": true,
+      "detail": "b-pre"
+    },
+    {
+      "name": "l6-stop: [a] stop order issued by the counterpart",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [a] issuer replica gained the STOP entry immediately (local append)",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "l6-stop: [a] post-stop: envelopes from the stopped peer are REFUSED at the issuer",
+      "ok": true,
+      "detail": "fault: refused (envelope from a STOPPED ring refused)"
+    },
+    {
+      "name": "l6-stop: [a] post-stop: no message from the stopped peer rendered (race window closed at the verifier)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [b] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [b] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [b] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [b] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "l6-stop: [b] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l6-stop: [b] stop-target shows the BLOCKING alarm (THIS device is the target)",
+      "ok": true,
+      "detail": "STOP ORDER from the counterpart: ring emP3GZ8w… is stopped — THIS device is the target"
+    },
+    {
+      "name": "l6-stop: [b] stop-target replica gained the STOP entry by gossip",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "l6-stop: [b] stop-target replica still verifies end-to-end after the gossiped STOP",
+      "ok": true,
+      "detail": "Vxq0vmF80d37"
+    }
+  ],
+  "pass": true
+}

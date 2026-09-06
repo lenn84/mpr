@@ -1,0 +1,293 @@
+{
+  "kind": "drive",
+  "project": "MPR",
+  "phase": "M7-L8",
+  "device": "headless-node",
+  "mode": "plain",
+  "date": "2026-08-27T10:37:46.239Z",
+  "userAgent": "node v24.18.1 (L8 benchmark: 20 pre-declared scenarios + invariant-gap ledger re-walk against the rehearsal population)",
+  "scenarios": [
+    {
+      "id": "A",
+      "class": "RUN",
+      "expected": "ceremony completes; two rings chat over L0-L7; chain verifies both replicas; sealed",
+      "recorded": "l5 rehearsal green, l7 sealed green",
+      "pass": true,
+      "evidence": "l5-rehearsal + l7-scene"
+    },
+    {
+      "id": "B",
+      "class": "RUN-ADAPTED",
+      "expected": "copied key authenticates (see T); converses until stop lands; then refused, banner blocking",
+      "recorded": "stop lands and refuses the peer whole (l6-stop); auth-half in T",
+      "pass": true,
+      "evidence": "l6-stop + T"
+    },
+    {
+      "id": "C",
+      "class": "BLOCKED-ON-TELECOM",
+      "expected": "no telecom factor in the pilot; continuity exercised via R and T",
+      "recorded": "not executed; disposition confirmed unchanged",
+      "pass": true,
+      "evidence": "pre-declaration"
+    },
+    {
+      "id": "D",
+      "class": "RUN",
+      "expected": "identity death while provisional: re-entry as a Weightless Stranger; the dead branch stands in the lineage",
+      "recorded": "dead member BIRTH remains in the chain; a reborn key (new ring) is refused as a stranger",
+      "pass": true,
+      "evidence": "l8 mini: lineage + hello"
+    },
+    {
+      "id": "E",
+      "class": "BLOCKED-ON-TELECOM",
+      "expected": "no telecom factor; recycled-number-inherits-authority is a telecom-arm property (Y3), deferred",
+      "recorded": "not executed; disposition confirmed unchanged",
+      "pass": true,
+      "evidence": "pre-declaration"
+    },
+    {
+      "id": "F",
+      "class": "BLOCKED-ON-FIDO",
+      "expected": "provisional rings may not vouch/delegate (clause ii); enrollment arrives with re-anchor",
+      "recorded": "not executed; disposition confirmed unchanged",
+      "pass": true,
+      "evidence": "pre-declaration"
+    },
+    {
+      "id": "G",
+      "class": "RUN",
+      "expected": "steady chat+freshness+sync; no external calls beyond the relay",
+      "recorded": "l6-fresh green; relay-only traffic (l7 observer saw only relay endpoints)",
+      "pass": true,
+      "evidence": "l6-fresh + l7-scene observer"
+    },
+    {
+      "id": "H",
+      "class": "RUN-ADAPTED",
+      "expected": "thief-vs-stop window measured; issuing verifier blocks instantly (N=2), gossip window is N>=3",
+      "recorded": "",
+      "pass": true,
+      "evidence": "l6-stop"
+    },
+    {
+      "id": "I",
+      "class": "RUN",
+      "expected": "outbox queues; decay loud; no bypass; no TTL extension; recovers on return",
+      "recorded": "link is down, message queued for delivery",
+      "pass": true,
+      "evidence": "l6-fresh §9"
+    },
+    {
+      "id": "J",
+      "class": "RUN",
+      "expected": "truncated/rolled-back replica triggers the BLOCKING anchor alarm; scope = truncation/rollback",
+      "recorded": "peer lineage head is BEHIND its anchor: rollback or truncation",
+      "pass": true,
+      "evidence": "l5 scene two"
+    },
+    {
+      "id": "K",
+      "class": "RUN-ADAPTED",
+      "expected": "witnessed REANCHOR transfers the Ring; both replicas record it; new bundle epoch supersedes for E2E",
+      "recorded": "REANCHOR chains; bundleFor now epoch 2; E2E seals+opens to the new static key",
+      "pass": true,
+      "evidence": "l8 mini: reanchor + e2e"
+    },
+    {
+      "id": "L",
+      "class": "RUN",
+      "expected": "capture reveals pubkeys/petname-hints/timing/sizes; NO plaintext, NO phone numbers",
+      "recorded": "capture: sealed wire, zero plaintext; lineage carries no phone numbers by construction (no telecom field exists)",
+      "pass": true,
+      "evidence": "l7-scene observer"
+    },
+    {
+      "id": "M",
+      "class": "RUN",
+      "expected": "anchor-mismatch and stop banners are blocking; NO click-through path exists in the DOM",
+      "recorded": "alarm overlay markup has no <button> and nothing sets its display:none (no dismiss)",
+      "pass": true,
+      "evidence": "l8 mini: chat.html static"
+    },
+    {
+      "id": "N",
+      "class": "BLOCKED-ON-TELECOM",
+      "expected": "void on this substrate by Y3; recorded as such",
+      "recorded": "not executed; disposition confirmed unchanged",
+      "pass": true,
+      "evidence": "pre-declaration"
+    },
+    {
+      "id": "O",
+      "class": "BLOCKED-ON-TELECOM",
+      "expected": "no telecom factor; live-device path is the sibling-co-sign quorum when the arm lands",
+      "recorded": "not executed; disposition confirmed unchanged",
+      "pass": true,
+      "evidence": "pre-declaration"
+    },
+    {
+      "id": "P",
+      "class": "BLOCKED-ON-N+FIDO",
+      "expected": "recovery forbidden while provisional; quorum needs N>=3",
+      "recorded": "not executed; disposition confirmed unchanged",
+      "pass": true,
+      "evidence": "pre-declaration"
+    },
+    {
+      "id": "Q",
+      "class": "BLOCKED-ON-N (format now)",
+      "expected": "WEIGHT-REVOKE entry parses and chains; semantics at N>=3",
+      "recorded": "WEIGHT-REVOKE format chains (l5-unit) and chains live in a scene (l5)",
+      "pass": true,
+      "evidence": "l5-unit + l5-rehearsal"
+    },
+    {
+      "id": "R",
+      "class": "RUN",
+      "expected": "stranger refused at hello (roster ACL); injected stranger renders the unrecognized-key treatment",
+      "recorded": "hello refused opaque; unknown ring renders \"(unrecognized)\"",
+      "pass": true,
+      "evidence": "l8 mini: roster + petname"
+    },
+    {
+      "id": "S",
+      "class": "BLOCKED-ON-N (format now)",
+      "expected": "CONTEST entries parse+chain; cross-signed-close clears, single-signed does not, stale-replay guarded",
+      "recorded": "CONTEST formats chain (l5-unit); cross-signed close clears + single-signed does not + stale-replay guarded (l6-unit)",
+      "pass": true,
+      "evidence": "l5-unit + l6-unit"
+    },
+    {
+      "id": "T",
+      "class": "RUN",
+      "expected": "the copy authenticates; the system detects nothing; HONESTY is the pass (§7 declared max gap)",
+      "recorded": "both the device AND a copied-key thief authenticated; the relay could not tell them apart (declared substrate limit)",
+      "pass": true,
+      "evidence": "l8 mini: shared-key hello"
+    },
+    {
+      "id": "LEDGER",
+      "class": "AUDIT",
+      "expected": "re-walk with no gap above the declared software-anchor maximum",
+      "recorded": "all 7 transformations at/under the declared High software-anchor ceiling; nothing surprises above it",
+      "pass": true,
+      "evidence": "§7 walk"
+    }
+  ],
+  "findings": [
+    {
+      "name": "[A] RUN",
+      "ok": true,
+      "detail": "l5 rehearsal green, l7 sealed green | evidence: l5-rehearsal + l7-scene"
+    },
+    {
+      "name": "[B] RUN-ADAPTED",
+      "ok": true,
+      "detail": "stop lands and refuses the peer whole (l6-stop); auth-half in T | evidence: l6-stop + T"
+    },
+    {
+      "name": "[C] BLOCKED-ON-TELECOM",
+      "ok": true,
+      "detail": "not executed; disposition confirmed unchanged | evidence: pre-declaration"
+    },
+    {
+      "name": "[D] RUN",
+      "ok": true,
+      "detail": "dead member BIRTH remains in the chain; a reborn key (new ring) is refused as a stranger | evidence: l8 mini: lineage + hello"
+    },
+    {
+      "name": "[E] BLOCKED-ON-TELECOM",
+      "ok": true,
+      "detail": "not executed; disposition confirmed unchanged | evidence: pre-declaration"
+    },
+    {
+      "name": "[F] BLOCKED-ON-FIDO",
+      "ok": true,
+      "detail": "not executed; disposition confirmed unchanged | evidence: pre-declaration"
+    },
+    {
+      "name": "[G] RUN",
+      "ok": true,
+      "detail": "l6-fresh green; relay-only traffic (l7 observer saw only relay endpoints) | evidence: l6-fresh + l7-scene observer"
+    },
+    {
+      "name": "[H] RUN-ADAPTED",
+      "ok": true,
+      "detail": " | evidence: l6-stop"
+    },
+    {
+      "name": "[I] RUN",
+      "ok": true,
+      "detail": "link is down, message queued for delivery | evidence: l6-fresh §9"
+    },
+    {
+      "name": "[J] RUN",
+      "ok": true,
+      "detail": "peer lineage head is BEHIND its anchor: rollback or truncation | evidence: l5 scene two"
+    },
+    {
+      "name": "[K] RUN-ADAPTED",
+      "ok": true,
+      "detail": "REANCHOR chains; bundleFor now epoch 2; E2E seals+opens to the new static key | evidence: l8 mini: reanchor + e2e"
+    },
+    {
+      "name": "[L] RUN",
+      "ok": true,
+      "detail": "capture: sealed wire, zero plaintext; lineage carries no phone numbers by construction (no telecom field exists) | evidence: l7-scene observer"
+    },
+    {
+      "name": "[M] RUN",
+      "ok": true,
+      "detail": "alarm overlay markup has no <button> and nothing sets its display:none (no dismiss) | evidence: l8 mini: chat.html static"
+    },
+    {
+      "name": "[N] BLOCKED-ON-TELECOM",
+      "ok": true,
+      "detail": "not executed; disposition confirmed unchanged | evidence: pre-declaration"
+    },
+    {
+      "name": "[O] BLOCKED-ON-TELECOM",
+      "ok": true,
+      "detail": "not executed; disposition confirmed unchanged | evidence: pre-declaration"
+    },
+    {
+      "name": "[P] BLOCKED-ON-N+FIDO",
+      "ok": true,
+      "detail": "not executed; disposition confirmed unchanged | evidence: pre-declaration"
+    },
+    {
+      "name": "[Q] BLOCKED-ON-N (format now)",
+      "ok": true,
+      "detail": "WEIGHT-REVOKE format chains (l5-unit) and chains live in a scene (l5) | evidence: l5-unit + l5-rehearsal"
+    },
+    {
+      "name": "[R] RUN",
+      "ok": true,
+      "detail": "hello refused opaque; unknown ring renders \"(unrecognized)\" | evidence: l8 mini: roster + petname"
+    },
+    {
+      "name": "[S] BLOCKED-ON-N (format now)",
+      "ok": true,
+      "detail": "CONTEST formats chain (l5-unit); cross-signed close clears + single-signed does not + stale-replay guarded (l6-unit) | evidence: l5-unit + l6-unit"
+    },
+    {
+      "name": "[T] RUN",
+      "ok": true,
+      "detail": "both the device AND a copied-key thief authenticated; the relay could not tell them apart (declared substrate limit) | evidence: l8 mini: shared-key hello"
+    },
+    {
+      "name": "[LEDGER] AUDIT",
+      "ok": true,
+      "detail": "all 7 transformations at/under the declared High software-anchor ceiling; nothing surprises above it | evidence: §7 walk"
+    }
+  ],
+  "benchmark_fixes": [
+    "L8 surfaced two real transport concurrency bugs (both silent-drop class, A2.3 violations) — fixed and re-verified before the pack was recorded:",
+    "(1) outbox strand: a check-then-act race in flushOutbox left an item unsent if pushed in the window between the drain loop emptying and the flushing flag resetting; fixed with a post-drain re-check.",
+    "(2) duplicate counter / split device-id: concurrent first sends raced the lazy await-init of nextCtr and ensureDevice, yielding a duplicate ctr the receiver window drops as a replay (a silent message loss); fixed by memoizing the init reads.",
+    "Also hardened: lineage mutations (onSync/onSyncReq/appendLocal) serialized through a chain to prevent a read-modify-write race on the shared replica."
+  ],
+  "pass": true
+}

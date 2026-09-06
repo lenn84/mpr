@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MPR — quickstart drive checklist</title>
+<!-- The interactive half of QUICKSTART.md: a drive-day checklist. Self-contained,
+     opened from disk (file://) — it documents how to start the server, so it must
+     not depend on one. LAN IP and port are typed here and live ONLY in this
+     browser's localStorage (never in repo files: the no-addresses/no-ports rule).
+     Checkbox/note state persists the same way; Export produces the drill-notes
+     JSON the G4 close block is authored from. -->
+<style>
+  :root { --yellow:#ffd23f; --teal:#0f6b74; --orange:#ff9f1c; --red:#e63946; --ink:#111; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:-apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); line-height:1.45;
+    background:#fdfdfa;
+    background-image:linear-gradient(rgba(17,17,17,.06) 1px, transparent 1px),
+                     linear-gradient(90deg, rgba(17,17,17,.06) 1px, transparent 1px);
+    background-size:22px 22px;
+    display:flex; justify-content:center; padding:20px 12px 80px;
+  }
+  main { width:100%; max-width:760px; background:#fff; border:3px solid var(--ink); box-shadow:8px 8px 0 var(--ink); }
+  header { background:var(--yellow); border-bottom:3px solid var(--ink); padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  header h1 { font-size:15px; text-transform:uppercase; letter-spacing:2px; }
+  header .prog { font-size:12px; font-weight:800; background:#fff; border:2px solid var(--ink); padding:3px 10px; }
+  section { padding:16px 18px; border-bottom:2px dashed #999; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--teal); margin-bottom:10px; }
+  .cfg { display:flex; gap:10px; flex-wrap:wrap; }
+  .cfg label { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:3px; }
+  .cfg input { border:2px solid var(--ink); padding:7px 9px; font-size:14px; font-family:ui-monospace, monospace; width:180px; }
+  .note { font-size:12px; color:#444; margin:6px 0 2px; }
+  .warn { background:#fff2f2; border:2px solid var(--red); padding:8px 10px; font-size:12.5px; font-weight:700; margin:8px 0; }
+  .item { display:flex; gap:10px; align-items:flex-start; padding:7px 0; }
+  .item input[type=checkbox] { width:20px; height:20px; accent-color:var(--teal); flex:none; margin-top:2px; }
+  .item.done .txt { opacity:.45; text-decoration:line-through; }
+  .txt { font-size:14px; }
+  .txt b { font-weight:800; }
+  pre { background:#111; color:#e8e8e8; font-family:ui-monospace, monospace; font-size:12.5px; padding:9px 11px; margin:6px 0; overflow-x:auto; position:relative; }
+  pre .ip { color:var(--yellow); } pre .pt { color:var(--orange); }
+  .copy { position:absolute; top:5px; right:5px; font-size:10px; padding:2px 7px; background:var(--teal); color:#fff; border:1px solid #fff; cursor:pointer; }
+  .drill { border:2px solid var(--ink); margin:10px 0; }
+  .drill .head { display:flex; gap:10px; align-items:center; padding:8px 10px; background:#f6f6f0; border-bottom:2px solid var(--ink); }
+  .drill .head input[type=checkbox] { width:20px; height:20px; accent-color:var(--teal); flex:none; }
+  .drill .head b { font-size:13px; }
+  .drill .exp { font-size:12px; color:#444; padding:8px 10px 0; }
+  .drill .row { display:flex; gap:10px; padding:8px 10px 10px; align-items:center; flex-wrap:wrap; }
+  .drill select { border:2px solid var(--ink); padding:5px; font-size:12px; }
+  .drill textarea { border:2px solid var(--ink); padding:6px 8px; font-size:13px; flex:1; min-width:200px; min-height:38px; font-family:inherit; }
+  .drill.dev { border-color:var(--red); } .drill.dev .head { background:#fff2f2; }
+  button.big { background:var(--teal); color:#fff; border:2px solid var(--ink); box-shadow:3px 3px 0 var(--ink); padding:9px 16px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1px; cursor:pointer; }
+  button.big.alt { background:var(--orange); color:var(--ink); }
+  button.big.danger { background:#fff; color:var(--red); }
+  button.big:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  footer { padding:16px 18px; display:flex; gap:10px; flex-wrap:wrap; }
+  #exportout { display:none; width:100%; min-height:120px; border:2px solid var(--ink); font-family:ui-monospace, monospace; font-size:11px; padding:8px; margin-top:10px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>MPR — drive checklist</h1>
+    <span class="prog" id="prog">0 done</span>
+  </header>
+
+  <section>
+    <h2>Session values (kept in this browser only)</h2>
+    <div class="cfg">
+      <div><label>laptop LAN IP</label><input id="ip" placeholder="your laptop's LAN IP"></div>
+      <div><label>port</label><input id="port" placeholder="pick one"></div>
+      <div><label>scratch dir</label><input id="scratch" value="~/ceremony-scratch"></div>
+    </div>
+    <p class="note">Commands below fill in live. Nothing you type here is written to any repo file.</p>
+  </section>
+
+  <section>
+    <h2>0 — Pre-flight</h2>
+    <div class="item"><input type="checkbox" data-k="p1"><div class="txt"><b>VPNs / tailnets OFF on both devices</b> — the population is one LAN.</div></div>
+    <div class="item"><input type="checkbox" data-k="p2"><div class="txt">Node ≥ 20 on the laptop (<code>node --version</code>).</div></div>
+    <div class="item"><input type="checkbox" data-k="p3"><div class="txt">Prove the stack: expect <b>165/165</b>.<pre data-cmd>node verify.mjs</pre></div></div>
+    <div class="item"><input type="checkbox" data-k="p4"><div class="txt">G4 pre-flight: expect <b>101/101</b>.<pre data-cmd>node verify.mjs --pre-g4</pre></div></div>
+  </section>
+
+  <section>
+    <h2>1 — TLS material (redo if the LAN IP changed)</h2>
+    <div class="item"><input type="checkbox" data-k="t1"><div class="txt"><pre data-cmd>sh census/make-cert.sh <span class="ip">&lt;LAN-IP&gt;</span></pre>Local CA + host cert with the IP SAN, into <code>runtime/tls/</code> (gitignored; the server refuses to serve the keys — that fence is in the verified battery).</div></div>
+  </section>
+
+  <section>
+    <h2>2 — Server: ceremony phase (no roster yet)</h2>
+    <div class="item"><input type="checkbox" data-k="s1"><div class="txt"><pre data-cmd>node census/serve.js <span class="pt">&lt;port&gt;</span></pre>The relay refuses everyone at this stage (no roster) — correct. Only the pages serve.</div></div>
+    <div class="item"><input type="checkbox" data-k="s1b"><div class="txt"><b>Open the laptop firewall for the port</b> (runtime-only on purpose — it closes itself on reboot):<pre data-cmd>sudo firewall-cmd --add-port=<span class="pt">&lt;port&gt;</span>/tcp</pre>Without this the phone says "can't connect to the server" even though the server runs.</div></div>
+    <div class="item"><input type="checkbox" data-k="s2"><div class="txt"><b>Phone: install the CA.</b> Browse to <pre>https://<span class="ip">&lt;LAN-IP&gt;</span>:<span class="pt">&lt;port&gt;</span>/ca.pem</pre>(one trust warning HERE is expected), install the profile; iOS: Settings → General → About → Certificate Trust Settings → enable full trust.</div></div>
+    <div class="item"><input type="checkbox" data-k="s2b"><div class="txt"><b>Laptop browser: trust the CA too</b> (browsers do not read <code>runtime/tls/</code> — each trust store gets the CA explicitly). Firefox: Settings → Privacy &amp; Security → Certificates → View Certificates → <b>Authorities</b> → delete any old "MPR pilot CA" → <b>Import…</b> <code>runtime/tls/ca.pem</code> → tick "Trust this CA to identify websites". Re-do this whenever <code>make-cert.sh</code> is re-run (every run mints a new CA).</div></div>
+    <div class="item"><input type="checkbox" data-k="s3"><div class="txt"><b>Both devices</b> load with <b>zero certificate warnings</b>:<pre>https://<span class="ip">&lt;LAN-IP&gt;</span>:<span class="pt">&lt;port&gt;</span>/runtime/app/ceremony.html</pre>Do not proceed past a warning — that is the floor.</div></div>
+  </section>
+
+  <section>
+    <h2>3 — The birth ceremony (throwaway keys; artifacts OUTSIDE the repo)</h2>
+    <p class="note">Normal browser windows (not private). Use the SAME browser per device later for the chat — the keys live in that browser's storage.</p>
+    <div class="item"><input type="checkbox" data-k="c1"><div class="txt"><b>Each device, Step 1 — mint.</b> Copy the QR block to the laptop as <code>qr-a.json</code> / <code>qr-b.json</code> in the scratch dir (public material only).</div></div>
+    <div class="item"><input type="checkbox" data-k="c2"><div class="txt"><b>Laptop — the kit</b> (offline-machine stand-in):<pre data-cmd>node census/ceremony.mjs genesis <span class="sc">~/ceremony-scratch</span>/g.json
+node census/ceremony.mjs compose <span class="sc">~/ceremony-scratch</span>/g.json <span class="sc">~/ceremony-scratch</span> <span class="sc">~/ceremony-scratch</span>/qr-a.json <span class="sc">~/ceremony-scratch</span>/qr-b.json
+node census/ceremony.mjs wipe <span class="sc">~/ceremony-scratch</span>/g.json</pre>Writes <code>lineage.json</code> + <code>roster.txt</code>, then destroys the genesis key.</div></div>
+    <div class="item"><input type="checkbox" data-k="c3"><div class="txt"><b>Each device, Step 2:</b> paste <code>lineage.json</code> → Verify and counter-sign.</div></div>
+    <div class="item"><input type="checkbox" data-k="c4"><div class="txt"><b>Step 3:</b> carry each device's counter-signature block to the OTHER device → Merge and verify strict.</div></div>
+    <div class="item"><input type="checkbox" data-k="c5"><div class="txt"><b>Step 4:</b> Seal with your petname for the other member. Both devices sealed.</div></div>
+  </section>
+
+  <section>
+    <h2>4 — Server: chat phase (the roster goes live)</h2>
+    <div class="warn">THE SHARP EDGE: the roster is read at boot only. Stop serve.js (Ctrl-C), restart WITH the roster, and confirm the console says <u>roster loaded: 2 ring(s)</u>. A relay without it refuses every join opaquely — chats strand in a silent retry loop ("link is down, message queued for delivery", forever).</div>
+    <div class="item"><input type="checkbox" data-k="r1"><div class="txt"><pre data-cmd>CELL_ROSTER=<span class="sc">~/ceremony-scratch</span>/roster.txt node census/serve.js <span class="pt">&lt;port&gt;</span></pre></div></div>
+    <div class="item"><input type="checkbox" data-k="r2"><div class="txt">Console shows <b>roster loaded: 2 ring(s)</b>.</div></div>
+    <div class="item"><input type="checkbox" data-k="r3"><div class="txt"><b>Both devices</b> open and join:<pre>https://<span class="ip">&lt;LAN-IP&gt;</span>:<span class="pt">&lt;port&gt;</span>/runtime/app/chat.html</pre></div></div>
+  </section>
+
+  <section>
+    <h2>5 — The nine drills (G4 run book; drill 8 LAST)</h2>
+    <p class="note">Per drill: tick when run, mark done-as-expected or DEVIATION, one line of what you saw. Deviation is data — an unexplained deviation is the only failure. Timestamps where a drill asks for them.</p>
+    <div id="drills"></div>
+  </section>
+
+  <section>
+    <h2>6 — Wrap up</h2>
+    <div class="item"><input type="checkbox" data-k="w1"><div class="txt"><b>Save-log on BOTH devices</b> (header button in the chat) — the payloads land in <code>raw/</code> as <code>drive-*-chat-*.json</code>, phase M7-G4.</div></div>
+    <div class="item"><input type="checkbox" data-k="w2"><div class="txt"><b>Export the drill notes below</b> and hand the JSON to the session — the G4 close block is authored from it.</div></div>
+  </section>
+
+  <footer>
+    <button class="big" id="export">Export drill notes</button>
+    <button class="big alt" id="copyexport">Copy to clipboard</button>
+    <button class="big danger" id="reset">Reset checklist</button>
+    <textarea id="exportout" readonly></textarea>
+  </footer>
+</main>
+
+<script>
+const DRILLS = [
+  ['1','Cold start','A','Text both ways + one photo each way. Sealed traffic; petnames render; photos byte-perfect; no alarms.'],
+  ['2','The stranger','R','Private-browsing window tries to join → ONE opaque refusal. A no-CA device → TLS trust error (the fence working).'],
+  ['3','Steady state (≥30 min)','G','DevTools network audit: relay-origin traffic only; every /relay/send payload a sealed blob.'],
+  ['4','Privacy crawl','L','Write down what an observer sees: pubkeys, advisory names, kinds, timing, sizes — NO plaintext, NO phone numbers. Record the list.'],
+  ['5','Relay outage','I','SIGKILL serve.js mid-chat; keep typing (queues loudly); restart WITH the roster → silent re-bind, queue flushes IN ORDER.'],
+  ['6','Stop drill','H','B fires "stop peer" (note the time); A keeps talking. A: blocking banner; B refuses A from the stop forward. WRITE DOWN the fire→refusal window.'],
+  ['7','Warning fatigue','M','Try to click/tap/scroll past the banner on A: no path exists.'],
+  ['8','Total device loss — RUN LAST','D','Clear site data on one device, reload, rejoin: new ring, opaque refusal, re-entry only as a stranger. Destroys the rehearsal population — the point.'],
+  ['9','Ledger re-walk','—','Re-read the §7 invariant-gap table against what was driven; no gap above the declared software-anchor max.'],
+];
+const $ = (id) => document.getElementById(id);
+const store = {
+  get k() { return 'mpr-quickstart-v1'; },
+  load() { try { return JSON.parse(localStorage.getItem(this.k)) || {}; } catch { return {}; } },
+  save(s) { localStorage.setItem(this.k, JSON.stringify(s)); },
+};
+let state = store.load();
+
+// drills UI
+const dwrap = $('drills');
+for (const [n, title, row, expected] of DRILLS) {
+  const d = document.createElement('div');
+  d.className = 'drill'; d.id = 'drill' + n;
+  d.innerHTML = '<div class="head"><input type="checkbox" data-k="d' + n + '"><b>' + n + ' — ' + title + '</b>' +
+    '<span style="margin-left:auto;font-size:11px;font-weight:800;color:var(--teal)">§8 row ' + row + '</span></div>' +
+    '<div class="exp"><b>Expected:</b> ' + expected + '</div>' +
+    '<div class="row"><select data-k="dv' + n + '"><option value="">— outcome —</option><option value="done">done as expected</option><option value="deviation">DEVIATION</option></select>' +
+    '<textarea data-k="dn' + n + '" placeholder="one line: what you saw (+ timestamps where asked)"></textarea></div>';
+  dwrap.appendChild(d);
+}
+
+// bind persistence
+function bindAll() {
+  document.querySelectorAll('[data-k]').forEach((el) => {
+    const k = el.dataset.k;
+    if (el.type === 'checkbox') { el.checked = !!state[k]; el.onchange = () => { state[k] = el.checked; sync(); }; }
+    else { el.value = state[k] || el.value || ''; el.oninput = () => { state[k] = el.value; sync(); }; }
+  });
+  ['ip', 'port', 'scratch'].forEach((id) => {
+    const el = $(id);
+    el.value = state['cfg-' + id] || el.value || '';
+    el.oninput = () => { state['cfg-' + id] = el.value; sync(); };
+  });
+}
+function sync() {
+  store.save(state);
+  // interpolate config into command blocks
+  const ip = state['cfg-ip'] || '<LAN-IP>', pt = state['cfg-port'] || '<port>', sc = state['cfg-scratch'] || '~/ceremony-scratch';
+  document.querySelectorAll('pre .ip').forEach((e) => e.textContent = ip);
+  document.querySelectorAll('pre .pt').forEach((e) => e.textContent = pt);
+  document.querySelectorAll('pre .sc').forEach((e) => e.textContent = sc);
+  // strike done items, tint deviation drills, progress count
+  document.querySelectorAll('.item').forEach((it) => {
+    const cb = it.querySelector('input[type=checkbox]');
+    if (cb) it.classList.toggle('done', cb.checked);
+  });
+  DRILLS.forEach(([n]) => { const d = $('drill' + n); if (d) d.classList.toggle('dev', state['dv' + n] === 'deviation'); });
+  const boxes = [...document.querySelectorAll('[data-k]')].filter((e) => e.type === 'checkbox');
+  $('prog').textContent = boxes.filter((b) => b.checked).length + '/' + boxes.length + ' done';
+}
+bindAll(); sync();
+
+// copy buttons on command blocks
+document.querySelectorAll('pre[data-cmd]').forEach((p) => {
+  const b = document.createElement('button');
+  b.className = 'copy'; b.textContent = 'copy';
+  b.onclick = () => { navigator.clipboard.writeText(p.textContent.slice(0, -b.textContent.length).trim()); b.textContent = 'copied'; setTimeout(() => b.textContent = 'copy', 900); };
+  p.appendChild(b);
+});
+
+// export: the drill-notes JSON the close block is authored from
+function exportNotes() {
+  const drills = DRILLS.map(([n, title, row]) => ({
+    drill: Number(n), title, row,
+    run: !!state['d' + n],
+    outcome: state['dv' + n] || '',
+    note: state['dn' + n] || '',
+  }));
+  return JSON.stringify({ kind: 'g4-drill-notes', project: 'MPR', phase: 'M7-G4',
+    date: new Date().toISOString(), drills }, null, 2);
+}
+$('export').onclick = () => { $('exportout').style.display = 'block'; $('exportout').value = exportNotes(); };
+$('copyexport').onclick = () => { navigator.clipboard.writeText(exportNotes()); $('copyexport').textContent = 'Copied'; setTimeout(() => $('copyexport').textContent = 'Copy to clipboard', 900); };
+$('reset').onclick = () => { if (confirm('Clear every checkbox, outcome, and note?')) { state = {}; store.save(state); document.querySelectorAll('[data-k]').forEach((el) => { if (el.type === 'checkbox') el.checked = false; else el.value = ''; }); bindAll(); sync(); } };
+</script>
+</body>
+</html>

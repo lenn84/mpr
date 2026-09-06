@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US — the birth room (device side)</title>
+<!-- The device-side half of the genesis ceremony (authid R7 §L5 steps 3, 5, 6).
+     This is identity-plane TOOLING, not the app: it may import wire/lineage libs
+     and bind the identity/storage cells directly, the way the offline kit does.
+     The chat app (chat.js) stays blind; this page seals what the chat later reads.
+     Requires HTTPS (L0): the identity cell refuses to bind on a plain origin. -->
+<style>
+  :root { --teal:#09637E; --mint:#5DD3B6; --red:#FF4646; --orange:#FFA240; --yellow:#FFD41D; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:Helvetica,Arial,sans-serif; color:#111; min-height:100vh; background:#FAFAFA;
+    background-image:linear-gradient(#e8e8e8 1px,transparent 1px),linear-gradient(90deg,#e8e8e8 1px,transparent 1px);
+    background-size:24px 24px; display:flex; flex-direction:column; align-items:center; padding:16px; }
+  .frame { width:100%; max-width:680px; background:#fff; border:3px solid #111; box-shadow:8px 8px 0 #111; }
+  .bar { border-bottom:3px solid #111; padding:10px 14px; background:var(--yellow); }
+  .bar b { font-size:16px; letter-spacing:1px; }
+  .step { padding:14px; border-bottom:2px dashed #999; }
+  .step h2 { font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--teal); margin-bottom:8px; }
+  .step.locked { opacity:.35; pointer-events:none; }
+  textarea { width:100%; border:2px solid #111; padding:8px; font:12px/1.4 monospace; background:#fff; min-height:72px; }
+  input[type=text] { border:2px solid #111; padding:10px; font:inherit; width:100%; background:#fff; }
+  button { border:2px solid #111; background:var(--teal); color:#fff; padding:8px 16px; font:inherit; font-weight:800;
+    cursor:pointer; box-shadow:4px 4px 0 #111; margin-top:8px; }
+  button:active { transform:translate(2px,2px); box-shadow:2px 2px 0 #111; }
+  .out { font:12px/1.4 monospace; background:#f4f4f4; border:2px solid #111; padding:8px; margin-top:8px;
+    white-space:pre-wrap; word-break:break-all; max-height:160px; overflow:auto; }
+  .ok { color:#0a6b4a; font-weight:800; } .bad { color:var(--red); font-weight:800; }
+  #status { font-size:12px; color:#444; padding:8px 14px; }
+  .note { font-size:11px; color:#444; margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="bar"><b>US — the birth room</b></div>
+
+  <div class="step" id="s1">
+    <h2>Step 1 — this device's ring is born</h2>
+    <input type="text" id="name" placeholder="your name (the petname hint carried to the kit)">
+    <button id="mint">Mint and show the QR</button>
+    <div class="out" id="qr" style="display:none"></div>
+    <div class="note">Carry this block to the OFFLINE kit (camera or copy — at the rehearsal, paste).
+    The kit composes the constitution, one invite and one birth per member, and writes the roster.</div>
+  </div>
+
+  <div class="step locked" id="s2">
+    <h2>Step 2 — the signed entries return; verify, then counter-sign your birth</h2>
+    <textarea id="entries" placeholder="paste lineage.json from the kit"></textarea>
+    <button id="counter">Verify and counter-sign</button>
+    <div class="out" id="mysig" style="display:none"></div>
+    <div class="note">Verification happens BEFORE anything is appended. The counter-signature block
+    is carried to the other device (the in-room exchange), and theirs comes here.</div>
+  </div>
+
+  <div class="step locked" id="s3">
+    <h2>Step 3 — the room exchange: merge the other member's counter-signature</h2>
+    <textarea id="theirsig" placeholder="paste the other device's counter-signature block"></textarea>
+    <button id="merge">Merge and verify strict</button>
+    <div class="out" id="chainstate" style="display:none"></div>
+  </div>
+
+  <div class="step locked" id="s4">
+    <h2>Step 4 — seal: petname, anchors, replica</h2>
+    <input type="text" id="petname" placeholder="YOUR name for the other member (theirs to you is theirs)">
+    <button id="seal">Seal this device</button>
+    <div class="note">Writes the replica, the peer anchor at the dispersal head, and the petname —
+    then the chat reads all three. After both devices seal and the roster is installed at the relay,
+    <a href="./chat.html">open the chat</a>.</div>
+  </div>
+
+  <div id="status">idle</div>
+</div>
+
+<script type="module">
+import { createKernel } from '../kernel/kernel.js';
+import * as storage from '../managers/storage.js';
+import * as identity from '../managers/identity.js';
+import { b64u, unb64u, fields, CONTEXTS } from '../lib/wire.js';
+import { verifyChain, addSig, chainHash } from '../lib/lineage.js';
+
+const $ = (id) => document.getElementById(id);
+const status = (t, bad) => { const s = $('status'); s.textContent = t; s.className = bad ? 'bad' : ''; };
+const unlock = (id) => $(id).classList.remove('locked');
+
+let kernel, idh, sth, ring, x_pub, entries, myBirth, peerRing, head;
+const waiters = new Map(); let seq = 0;
+const opts = { onEnvelope: (e) => { const w = e.correlation && waiters.get(e.correlation); if (w) { waiters.delete(e.correlation); w(e); } } };
+async function ask(h, op, body) {
+  const c = 'cer-' + (++seq);
+  const reply = new Promise((res) => waiters.set(c, res));
+  const ack = await kernel.transmit(h, { op, body, correlation: c });
+  if (ack && ack.op === 'fault') { waiters.delete(c); return ack; }
+  return reply;
+}
+const signFn = async (context, payloadB64) => {
+  const s = await ask(idh, 'sign', { context, payload: payloadB64 });
+  if (s.op === 'fault') throw new Error('sign refused: ' + s.body.detail);
+  return s.body.sig;
+};
+
+$('mint').onclick = async () => {
+  try {
+    if (!$('name').value.trim()) { status('enter your name', true); return; }
+    if (!kernel) {
+      kernel = await createKernel();
+      const reg = kernel.bind(kernel.resolve({ need: ['registry'] }), { onEnvelope: () => {} });
+      for (const r of [storage.register, identity.register]) {
+        for (const d of [].concat(r(kernel))) {
+          const a = await kernel.transmit(reg, { op: 'mint', body: d });
+          if (a.op === 'fault') throw new Error('mint refused: ' + d.id);
+        }
+      }
+      idh = kernel.bind(kernel.resolve({ need: ['identity:pair'] }), opts);
+      sth = kernel.bind(kernel.resolve({ need: ['store:kv'] }), opts);
+      if (!idh.ref) throw new Error('identity cell refused to bind — is this page on HTTPS? (L0)');
+    }
+    const m = await ask(idh, 'mint', { name: $('name').value.trim() });
+    if (m.op === 'fault') throw new Error('identity refused');
+    ring = m.body.ring; x_pub = m.body.x_pub;
+    const bundle_sig = await signFn(CONTEXTS.bundle, b64u(fields.bundle(1, unb64u(ring), unb64u(x_pub))));
+    $('qr').textContent = JSON.stringify({ ring, x_pub, bundle_epoch: 1, bundle_sig, petname_hint: $('name').value.trim() });
+    $('qr').style.display = 'block';
+    unlock('s2'); status('ring born; carry the QR block to the offline kit');
+  } catch (e) { status(String(e.message || e), true); }
+};
+
+$('counter').onclick = async () => {
+  try {
+    entries = JSON.parse($('entries').value);
+    const v0 = await verifyChain(entries, { requireCountersign: false });
+    if (!v0.ok) { status('REFUSED: entries do not verify — ' + v0.reason, true); return; }
+    myBirth = entries.find((e) => e.type === 'BIRTH' && e.body.ring === ring);
+    if (!myBirth) { status('REFUSED: no birth for this ring in the entries', true); return; }
+    await addSig(myBirth, ring, signFn);
+    $('mysig').textContent = JSON.stringify({ n: myBirth.n, sig: myBirth.sigs[myBirth.sigs.length - 1] });
+    $('mysig').style.display = 'block';
+    unlock('s3'); status('entries verified; your counter-signature is ready to carry over');
+  } catch (e) { status('bad entries: ' + String(e.message || e), true); }
+};
+
+$('merge').onclick = async () => {
+  try {
+    const cs = JSON.parse($('theirsig').value);
+    entries[cs.n].sigs.push(cs.sig);
+    const v = await verifyChain(entries);
+    if (!v.ok) { status('REFUSED strict: ' + v.reason, true); return; }
+    peerRing = v.births.map((b) => b.ring).find((r) => r !== ring);
+    head = v.head;
+    $('chainstate').textContent = 'chain VERIFIED strict — head ' + v.head.slice(0, 16) + '…\n'
+      + 'invites: ' + v.budget.declared + ' declared, ' + v.budget.spent + ' spent, ' + v.budget.remaining + ' remaining\n'
+      + 'births: ' + v.births.map((b) => b.petname_hint + ' (' + b.ring.slice(0, 8) + '…)').join(', ');
+    $('chainstate').style.display = 'block';
+    unlock('s4'); status('both counter-signatures in; the replicas leave the room identical');
+  } catch (e) { status('bad counter-signature block: ' + String(e.message || e), true); }
+};
+
+$('seal').onclick = async () => {
+  try {
+    const pet = $('petname').value.trim();
+    if (!pet) { status('enter your petname for the other member', true); return; }
+    if (!peerRing) { status('no peer ring — merge first', true); return; }
+    await ask(sth, 'put', { key: 'lineage:replica', value: entries });
+    await ask(sth, 'put', { key: 'lineage:anchors', value: { [peerRing]: head } });
+    await ask(sth, 'put', { key: 'petnames', value: { [peerRing]: pet } });
+    status('SEALED. This device holds the replica, the peer anchor, and the petname. Open the chat.');
+  } catch (e) { status('seal failed: ' + String(e.message || e), true); }
+};
+</script>
+</body>
+</html>

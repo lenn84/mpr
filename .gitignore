@@ -1,0 +1,19 @@
+# Seed register stays local. Kept forever, never travels.
+idea.txt
+
+# Session tooling
+.claude/
+
+# Scratch
+scratch/
+*.tmp
+
+# M7 runtime secrets and per-deployment state: keys and certs never travel
+# (extends the no-port/no-credential house rule). Generated at runtime/ceremony.
+runtime/tls/
+*.pem
+*.key
+*.crt
+# The roster and lineage replicas are per-deployment runtime state, not repo data.
+runtime/roster.txt
+runtime/lineage/

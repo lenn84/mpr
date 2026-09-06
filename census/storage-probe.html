@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>census — storage persistence probe v2</title>
+<!-- M2-census-style capability probe, minted during the G4 drive (2026-09-06). v1
+     proved plain values + AES + Ed25519 CryptoKeys persist on the phone, yet the
+     identity ring still died per reload. The remaining delta: the identity record
+     also holds an X25519 CryptoKey. v2 adds X25519 and an exact identity-shaped
+     record {edPriv, xPriv, ring, x_pub}, and listens at the TRANSACTION level —
+     an IndexedDB write can succeed per-request and then abort at commit, which is
+     invisible unless tx.oncomplete/onabort are watched. Visit → read the WRITE
+     verdicts; reload → read the SURVIVAL verdicts. -->
+<style>
+  body { font-family:-apple-system, "Segoe UI", sans-serif; margin:0; padding:18px; background:#fdfdfa; color:#111; }
+  h1 { font-size:14px; text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
+  .row { border:2px solid #111; padding:10px 12px; margin:8px 0; font-size:14px; display:flex; justify-content:space-between; gap:10px; }
+  .ok { background:#e7f6ef; } .bad { background:#fde8e8; } .na { background:#f4f4f0; }
+  .v { font-weight:800; text-align:right; }
+  h2 { font-size:11px; text-transform:uppercase; letter-spacing:2px; color:#0f6b74; margin:16px 0 4px; }
+  #meta { font-size:12px; color:#444; margin-top:14px; line-height:1.5; word-break:break-all; }
+</style>
+</head>
+<body>
+<h1>Storage probe v2 — X25519 + commit watch</h1>
+<h2>Survival (what a PREVIOUS visit left)</h2>
+<div id="surv"></div>
+<h2>Writes THIS visit (request vs commit)</h2>
+<div id="writes"></div>
+<div id="meta"></div>
+<script type="module">
+const surv = document.getElementById('surv');
+const writes = document.getElementById('writes');
+const meta = document.getElementById('meta');
+const subtle = crypto.subtle;
+function row(host, name, verdict, cls, detail) {
+  const d = document.createElement('div');
+  d.className = 'row ' + cls;
+  d.innerHTML = '<span>' + name + (detail ? ' <small>(' + detail + ')</small>' : '') + '</span><span class="v">' + verdict + '</span>';
+  host.appendChild(d);
+}
+const idb = () => new Promise((res, rej) => {
+  const rq = indexedDB.open('census-storage-probe2', 1);
+  rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+  rq.onsuccess = () => res(rq.result);
+  rq.onerror = () => rej(rq.error);
+});
+const readK = (db, k) => new Promise((res, rej) => {
+  const tx = db.transaction('kv', 'readonly'); const rq = tx.objectStore('kv').get(k);
+  rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error);
+});
+// A put that reports BOTH the request result and the transaction commit result.
+function putWatched(db, k, v) {
+  return new Promise((res) => {
+    let reqOk = false, syncThrow = null;
+    let tx;
+    try {
+      tx = db.transaction('kv', 'readwrite');
+      const rq = tx.objectStore('kv').put(v, k);
+      rq.onsuccess = () => { reqOk = true; };
+      rq.onerror = () => { reqOk = false; };
+      tx.oncomplete = () => res({ reqOk, commit: 'COMMITTED' });
+      tx.onabort = () => res({ reqOk, commit: 'ABORTED: ' + String((tx.error && tx.error.name) || 'unknown') });
+      tx.onerror = () => {};
+    } catch (e) {
+      res({ reqOk: false, commit: 'THREW: ' + String(e && e.name), syncThrow: true });
+    }
+  });
+}
+try {
+  const db = await idb();
+  // --- survival phase (previous visit's records)
+  const checks = [
+    ['plain', 'IDB plain value', async (r) => r ? 'SURVIVED (' + r + ')' : 'absent'],
+    ['ed', 'Ed25519 key alone', async (r) => {
+      if (!r || !r.priv) return 'absent';
+      const s = await subtle.sign({ name: 'Ed25519' }, r.priv, new Uint8Array(4));
+      return (await subtle.verify({ name: 'Ed25519' }, r.pub, s, new Uint8Array(4))) ? 'SURVIVED + signs' : 'unusable';
+    }],
+    ['x', 'X25519 key alone', async (r) => {
+      if (!r || !r.priv) return 'absent';
+      const peer = await subtle.generateKey({ name: 'X25519' }, false, ['deriveBits']);
+      await subtle.deriveBits({ name: 'X25519', public: peer.publicKey }, r.priv, 256);
+      return 'SURVIVED + derives';
+    }],
+    ['identity-shaped', 'identity-shaped record {edPriv,xPriv,ring,x_pub}', async (r) => {
+      if (!r || !r.edPriv || !r.xPriv) return 'absent';
+      await subtle.sign({ name: 'Ed25519' }, r.edPriv, new Uint8Array(4));
+      const peer = await subtle.generateKey({ name: 'X25519' }, false, ['deriveBits']);
+      await subtle.deriveBits({ name: 'X25519', public: peer.publicKey }, r.xPriv, 256);
+      return 'SURVIVED + both keys usable (ring ' + String(r.ring).slice(0, 8) + '…)';
+    }],
+  ];
+  for (const [k, name, judge] of checks) {
+    let rec = null, verdict;
+    try { rec = await readK(db, k); verdict = await judge(rec); }
+    catch (e) { verdict = 'present but FAILS: ' + String(e && e.name); }
+    row(surv, name, verdict, /SURVIVED/.test(verdict) ? 'ok' : 'bad', 'first visit: absent is expected');
+  }
+
+  // --- write phase with commit watch
+  const stamp = 'visit-' + Math.floor(Math.random() * 1e6);
+  const wPlain = await putWatched(db, 'plain', stamp);
+  row(writes, 'plain value', wPlain.commit, /COMMITTED/.test(wPlain.commit) ? 'ok' : 'bad', 'req ' + (wPlain.reqOk ? 'ok' : 'ERR'));
+  const ed = await subtle.generateKey({ name: 'Ed25519' }, false, ['sign', 'verify']);
+  const wEd = await putWatched(db, 'ed', { priv: ed.privateKey, pub: ed.publicKey });
+  row(writes, 'Ed25519 key alone', wEd.commit, /COMMITTED/.test(wEd.commit) ? 'ok' : 'bad', 'req ' + (wEd.reqOk ? 'ok' : 'ERR'));
+  let x = null, wX = { commit: 'generateKey FAILED' };
+  try {
+    x = await subtle.generateKey({ name: 'X25519' }, false, ['deriveBits']);
+    wX = await putWatched(db, 'x', { priv: x.privateKey, pub: x.publicKey });
+  } catch (e) { wX = { commit: 'generateKey THREW: ' + String(e && e.name) }; }
+  row(writes, 'X25519 key alone', wX.commit, /COMMITTED/.test(wX.commit) ? 'ok' : 'bad', 'req ' + (wX.reqOk ? 'ok' : 'ERR'));
+  let wId = { commit: 'skipped (no X25519)' };
+  if (x) {
+    const ring = btoa(String.fromCharCode(...new Uint8Array(await subtle.exportKey('raw', ed.publicKey)))).slice(0, 12);
+    wId = await putWatched(db, 'identity-shaped', { edPriv: ed.privateKey, xPriv: x.privateKey, ring, x_pub: 'probe' });
+  }
+  row(writes, 'identity-shaped record', wId.commit, /COMMITTED/.test(wId.commit) ? 'ok' : 'bad', 'req ' + (wId.reqOk ? 'ok' : 'ERR'));
+
+  meta.textContent = 'marker ' + stamp + ' | secureContext: ' + isSecureContext + ' | UA: ' + navigator.userAgent;
+} catch (e) {
+  row(writes, 'probe itself', 'FAILED: ' + String((e && e.message) || e), 'bad');
+}
+</script>
+</body>
+</html>

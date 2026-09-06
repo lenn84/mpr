@@ -1,0 +1,202 @@
+{
+  "kind": "drive",
+  "project": "MPR",
+  "phase": "M7-L7",
+  "device": "headless-node",
+  "mode": "plain",
+  "date": "2026-08-27T08:44:27.744Z",
+  "userAgent": "node v24.18.1 (headless: E2E lib unit + full-stack scene with on-path observer proxy and downgrade probe)",
+  "findings": [
+    {
+      "name": "l7-unit: seal/open roundtrip",
+      "ok": true,
+      "detail": "the letter"
+    },
+    {
+      "name": "l7-unit: sealed shape recognized",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: fresh ephemeral per message (e differs, c differs)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: sealed blob carries no plaintext",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: wrong static key cannot decrypt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: tampered ciphertext fails AEAD",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: sealed payload is bound to its pair id",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: sealed envelope verifies and yields the sealed payload",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-unit: tampered ciphertext fails the OUTER signature before AEAD ever runs",
+      "ok": true,
+      "detail": "bad signature"
+    },
+    {
+      "name": "l7-unit: COMPROMISE DRILL: recipient-static key decrypts past traffic (the honest NO, demonstrated)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "l7-scene: [a] seeded WEIGHT-REVOKE entry chains",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] replica converged to 6 entries and verifies",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "l7-scene: [a] peer anchor sits at the converged head",
+      "ok": true,
+      "detail": "BTTRTkSLft7M"
+    },
+    {
+      "name": "l7-scene: [a] message received rendered by PETNAME, not wire name",
+      "ok": true,
+      "detail": "bobby"
+    },
+    {
+      "name": "l7-scene: [a] presence rendered by petname",
+      "ok": true,
+      "detail": "bobby"
+    },
+    {
+      "name": "l7-scene: [a] no alarm in the healthy run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [a] downgrade probe posted (valid signature, plaintext payload)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [b] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [b] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [b] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [b] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "l7-scene: [b] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [b] replica converged to 6 entries and verifies",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "l7-scene: [b] peer anchor sits at the converged head",
+      "ok": true,
+      "detail": "BTTRTkSLft7M"
+    },
+    {
+      "name": "l7-scene: [b] message received rendered by PETNAME, not wire name",
+      "ok": true,
+      "detail": "captain"
+    },
+    {
+      "name": "l7-scene: [b] presence rendered by petname",
+      "ok": true,
+      "detail": "captain"
+    },
+    {
+      "name": "l7-scene: [b] no alarm in the healthy run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: [b] plaintext downgrade REFUSED loudly (E2E required on this pair)",
+      "ok": true,
+      "detail": "fault: refused (plaintext payload refused: E2E is required on this pair)"
+    },
+    {
+      "name": "l7-scene: [b] PLAINTEXT-LEAK never rendered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: observer saw the traffic (sends captured)",
+      "ok": true,
+      "detail": "10 sends"
+    },
+    {
+      "name": "l7-scene: every send on the wire is SEALED except the one deliberate probe",
+      "ok": true,
+      "detail": "9 sealed, 1 plaintext"
+    },
+    {
+      "name": "l7-scene: no chat plaintext anywhere in the capture",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "l7-scene: the deliberate downgrade probe IS visible in the capture (why it must be refused)",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "pass": true
+}

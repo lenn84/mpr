@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MPR M2 Resource Census</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Helvetica, Arial, sans-serif; color: #111; background: #fff; max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 20px; font-weight: 800; border-bottom: 3px solid #111; padding-bottom: 8px; }
+  .sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #C22; font-weight: 700; margin: 4px 0 16px; }
+  .controls { margin: 16px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  input[type=text] { border: 1px solid #111; padding: 8px 10px; font: inherit; width: 240px; }
+  button { border: 1px solid #111; background: #111; color: #fff; padding: 8px 16px; font: inherit; font-weight: 700; cursor: pointer; }
+  button.secondary { background: #fff; color: #111; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 6px; border-top: 1.5px solid #111; padding-top: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  td { border-bottom: 1px solid #ccc; padding: 5px 8px 5px 0; vertical-align: top; }
+  td.k { width: 34%; font-weight: 700; }
+  td.claim { width: 10%; color: #C22; font-weight: 700; }
+  .yes { color: #0a6b2d; font-weight: 700; }
+  .no { color: #C22; font-weight: 700; }
+  .meta { font-size: 12px; color: #444; margin: 8px 0; }
+  #status { font-size: 12px; margin: 8px 0; color: #444; }
+</style>
+</head>
+<body>
+<h1>MPR M2 Resource Census</h1>
+<div class="sub">Discover step of the cell, run on the substrate itself / internal</div>
+<div class="meta" id="envline"></div>
+<div class="controls">
+  <input type="text" id="device" placeholder="device label (e.g. laptop-operator)">
+  <button id="run">Run census</button>
+  <button id="submit" disabled>Save to raw/</button>
+  <button id="save" class="secondary" disabled>Download JSON</button>
+</div>
+<div id="status"></div>
+<div id="out"></div>
+
+<script>
+'use strict';
+
+const findings = [];
+let done = false;
+
+function record(resource, id, name, value, claim) {
+  findings.push({ resource, id, name, value, claim });
+}
+
+function fmt(v) {
+  if (v === true) return '<span class="yes">yes</span>';
+  if (v === false) return '<span class="no">no</span>';
+  if (v === null || v === undefined) return '<span class="no">unavailable</span>';
+  return String(v);
+}
+
+// Minimal valid Wasm module: magic + version.
+const WASM_EMPTY = new Uint8Array([0x00,0x61,0x73,0x6d,0x01,0x00,0x00,0x00]);
+
+async function probeExecution() {
+  record('execution','workers','Worker constructor', typeof Worker === 'function','A1');
+  record('execution','concurrency','hardwareConcurrency', navigator.hardwareConcurrency ?? null,'A1');
+  record('execution','wasm','WebAssembly object', typeof WebAssembly === 'object','A2');
+  let inst = false;
+  try { await WebAssembly.instantiate(WASM_EMPTY); inst = true; } catch (e) {}
+  record('execution','wasmInstantiate','Wasm empty-module instantiate', inst,'A2');
+  // Wasm inside a worker, round-tripped.
+  let inWorker = false, moduleWorker = false;
+  try {
+    const src = 'onmessage=async e=>{try{await WebAssembly.instantiate(new Uint8Array(e.data));postMessage(true)}catch(x){postMessage(false)}}';
+    const url = URL.createObjectURL(new Blob([src], {type:'text/javascript'}));
+    inWorker = await new Promise((res) => {
+      const w = new Worker(url);
+      const t = setTimeout(() => { w.terminate(); res(false); }, 3000);
+      w.onmessage = e => { clearTimeout(t); w.terminate(); res(e.data === true); };
+      w.onerror = () => { clearTimeout(t); w.terminate(); res(false); };
+      w.postMessage(WASM_EMPTY.buffer.slice(0));
+    });
+    URL.revokeObjectURL(url);
+  } catch (e) {}
+  record('execution','wasmInWorker','Wasm instantiates inside a worker', inWorker,'A2');
+  try {
+    const url2 = URL.createObjectURL(new Blob(['postMessage(1)'], {type:'text/javascript'}));
+    moduleWorker = await new Promise((res) => {
+      let w; try { w = new Worker(url2, {type:'module'}); } catch (e) { res(false); return; }
+      const t = setTimeout(() => { w.terminate(); res(false); }, 3000);
+      w.onmessage = () => { clearTimeout(t); w.terminate(); res(true); };
+      w.onerror = () => { clearTimeout(t); w.terminate(); res(false); };
+    });
+    URL.revokeObjectURL(url2);
+  } catch (e) {}
+  record('execution','moduleWorker','Module-type workers', moduleWorker,'A1');
+}
+
+async function probeMemory() {
+  record('memory','isolation','crossOriginIsolated', self.crossOriginIsolated === true,'B1');
+  record('memory','sab','SharedArrayBuffer constructor', typeof SharedArrayBuffer === 'function','B1');
+  let sabUsable = false;
+  try { new SharedArrayBuffer(8); sabUsable = true; } catch (e) {}
+  record('memory','sabUsable','SharedArrayBuffer allocatable', sabUsable,'B1');
+  record('memory','atomics','Atomics object', typeof Atomics === 'object','B1');
+  record('memory','deviceMemory','deviceMemory (GB, coarse)', navigator.deviceMemory ?? null,'B2');
+  // Transferable round-trip through a worker: the message-passing memory claim.
+  let transfer = false;
+  try {
+    const src = 'onmessage=e=>{postMessage(e.data,[e.data])}';
+    const url = URL.createObjectURL(new Blob([src], {type:'text/javascript'}));
+    transfer = await new Promise((res) => {
+      const w = new Worker(url);
+      const buf = new ArrayBuffer(1024 * 1024);
+      const t = setTimeout(() => { w.terminate(); res(false); }, 3000);
+      w.onmessage = e => { clearTimeout(t); w.terminate(); res(e.data && e.data.byteLength === 1024 * 1024); };
+      w.onerror = () => { clearTimeout(t); w.terminate(); res(false); };
+      w.postMessage(buf, [buf]);
+    });
+    URL.revokeObjectURL(url);
+  } catch (e) {}
+  record('memory','transfer','1MB transferable round-trip via worker', transfer,'B2');
+}
+
+async function probeScheduling() {
+  record('scheduling','messageChannel','MessageChannel', typeof MessageChannel === 'function','C1');
+  record('scheduling','idleCallback','requestIdleCallback', typeof requestIdleCallback === 'function','C1');
+  record('scheduling','animationFrame','requestAnimationFrame', typeof requestAnimationFrame === 'function','C1');
+  // Mean timer drift over 30 zero-delay timeouts.
+  const drifts = [];
+  for (let i = 0; i < 30; i++) {
+    const t0 = performance.now();
+    await new Promise(r => setTimeout(r, 0));
+    drifts.push(performance.now() - t0);
+  }
+  const mean = drifts.reduce((a,b) => a + b, 0) / drifts.length;
+  record('scheduling','timerDrift','Mean zero-timeout drift (ms)', Math.round(mean * 100) / 100,'C1');
+}
+
+async function probeStorage() {
+  let estimate = null;
+  try {
+    const e = await navigator.storage.estimate();
+    estimate = 'quota ' + Math.round((e.quota || 0) / 1048576) + ' MB, used ' + Math.round((e.usage || 0) / 1048576) + ' MB';
+  } catch (e) {}
+  record('storage','estimate','Origin storage estimate', estimate,'D1');
+  let opfs = false;
+  try {
+    const root = await navigator.storage.getDirectory();
+    const fh = await root.getFileHandle('census-probe.txt', {create: true});
+    const w = await fh.createWritable(); await w.write('probe'); await w.close();
+    await root.removeEntry('census-probe.txt');
+    opfs = true;
+  } catch (e) {}
+  record('storage','opfs','Origin-private filesystem write cycle', opfs,'D1');
+  let idb = false;
+  try {
+    idb = await new Promise((res) => {
+      const req = indexedDB.open('census-probe', 1);
+      const t = setTimeout(() => res(false), 3000);
+      req.onupgradeneeded = () => req.result.createObjectStore('s');
+      req.onsuccess = () => { clearTimeout(t); req.result.close(); indexedDB.deleteDatabase('census-probe'); res(true); };
+      req.onerror = () => { clearTimeout(t); res(false); };
+    });
+  } catch (e) {}
+  record('storage','idb','IndexedDB open cycle', idb,'D1');
+  record('storage','caches','CacheStorage', typeof caches === 'object','D1');
+  let persisted = null;
+  try { persisted = await navigator.storage.persisted(); } catch (e) {}
+  record('storage','persisted','Persistence already granted', persisted,'D1');
+}
+
+async function probeIO() {
+  record('io','fetch','fetch', typeof fetch === 'function','E1');
+  record('io','websocket','WebSocket constructor', typeof WebSocket === 'function','E1');
+  record('io','sse','EventSource (server-sent events)', typeof EventSource === 'function','E1');
+  record('io','rtc','RTCPeerConnection (peer channel, later resolution)', typeof RTCPeerConnection === 'function','E2');
+  record('io','webtransport','WebTransport', typeof WebTransport === 'function','E2');
+  record('io','broadcast','BroadcastChannel (same-origin bus)', typeof BroadcastChannel === 'function','E1');
+  record('io','online','navigator.onLine', navigator.onLine,'E1');
+}
+
+function render() {
+  const groups = {};
+  for (const f of findings) (groups[f.resource] = groups[f.resource] || []).push(f);
+  let html = '';
+  for (const g of Object.keys(groups)) {
+    html += '<h2>' + g + '</h2><table>';
+    for (const f of groups[g]) {
+      html += '<tr><td class="k">' + f.name + '</td><td>' + fmt(f.value) + '</td><td class="claim">' + f.claim + '</td></tr>';
+    }
+    html += '</table>';
+  }
+  document.getElementById('out').innerHTML = html;
+}
+
+function buildPayload() {
+  const device = document.getElementById('device').value.trim() || 'unlabeled';
+  const mode = self.crossOriginIsolated ? 'isolated' : 'plain';
+  return {
+    project: 'MPR', phase: 'M2', device, mode,
+    date: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    findings
+  };
+}
+
+async function submitJSON() {
+  const status = document.getElementById('status');
+  try {
+    const r = await fetch('/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(buildPayload())
+    });
+    if (!r.ok) throw new Error('server said ' + r.status);
+    const j = await r.json();
+    status.textContent = 'saved on the host as raw/' + j.saved;
+  } catch (e) {
+    status.textContent = 'save failed (' + e.message + '). Use Download JSON and move the file by hand.';
+  }
+}
+
+function exportJSON() {
+  const payload = buildPayload();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'census-' + payload.device + '-' + payload.mode + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+document.getElementById('envline').textContent =
+  'isolation: ' + (self.crossOriginIsolated ? 'ON' : 'OFF') + ' / agent: ' + navigator.userAgent;
+
+document.getElementById('run').onclick = async () => {
+  findings.length = 0; done = false;
+  document.getElementById('save').disabled = true;
+  const status = document.getElementById('status');
+  const steps = [probeExecution, probeMemory, probeScheduling, probeStorage, probeIO];
+  const names = ['execution','memory','scheduling','storage','io'];
+  for (let i = 0; i < steps.length; i++) {
+    status.textContent = 'probing ' + names[i] + '...';
+    try { await steps[i](); } catch (e) { record(names[i], 'grouperror', 'Probe group threw', String(e), 'note'); }
+    render();
+  }
+  status.textContent = 'census complete: ' + findings.length + ' findings. Label the device, then Save to raw/.';
+  done = true;
+  document.getElementById('save').disabled = false;
+  document.getElementById('submit').disabled = false;
+};
+
+document.getElementById('save').onclick = () => { if (done) exportJSON(); };
+document.getElementById('submit').onclick = () => { if (done) submitJSON(); };
+</script>
+</body>
+</html>

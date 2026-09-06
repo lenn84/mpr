@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MPR M4 — G1 Drive</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Helvetica, Arial, sans-serif; color: #111; max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 20px; font-weight: 800; border-bottom: 3px solid #111; padding-bottom: 8px; }
+  .sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #C22; font-weight: 700; margin: 4px 0 12px; }
+  .meta { font-size: 12px; color: #444; margin-bottom: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 8px; }
+  td { border-bottom: 1px solid #ccc; padding: 5px 8px 5px 0; }
+  .ok { color: #0a6b2d; font-weight: 700; }
+  .fail { color: #C22; font-weight: 700; }
+  #verdict { font-size: 16px; font-weight: 800; margin: 14px 0; }
+  .controls { margin: 12px 0; display: flex; gap: 8px; align-items: center; }
+  input[type=text] { border: 1px solid #111; padding: 8px 10px; font: inherit; width: 220px; }
+  button { border: 1px solid #111; background: #111; color: #fff; padding: 8px 16px; font: inherit; font-weight: 700; cursor: pointer; }
+  button:disabled { opacity: 0.4; cursor: default; }
+</style>
+</head>
+<body>
+<h1>M4 — G1 Drive</h1>
+<div class="sub">A trivial application inside the constructed world</div>
+<div class="meta" id="envline"></div>
+<div class="controls">
+  <input type="text" id="device" placeholder="device label (e.g. laptop-operator)">
+  <button id="go">Boot and run</button>
+  <button id="save" disabled>Save drive log to raw/</button>
+</div>
+<div id="errors" style="color:#C22;font-size:12px;white-space:pre-wrap;"></div>
+<div id="verdict"></div>
+<table id="out"></table>
+
+<script>
+  // Classic script, runs before the module: catches module parse and load
+  // failures too, so a silent phone becomes a talking one.
+  (function () {
+    var box = null;
+    function show(msg) {
+      if (!box) box = document.getElementById('errors');
+      if (box) box.textContent += msg + '\n';
+    }
+    window.addEventListener('error', function (e) {
+      show('error: ' + (e.message || 'unknown') + (e.filename ? ' @ ' + e.filename.split('/').pop() + ':' + e.lineno : ''));
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason;
+      show('rejection: ' + ((r && (r.stack || r.message)) || String(r)));
+    });
+  })();
+</script>
+<script>
+// Classic script, no module chain: each runtime file loads via dynamic import
+// with per-file reporting, because WebKit masks module-chain errors as
+// "Script error." while dynamic import rejections carry the real message.
+var result = null;
+var mods = null;
+var secure = (typeof isSecureContext !== 'undefined') && globalThis.isSecureContext === true;
+var isolated = (typeof crossOriginIsolated !== 'undefined') && globalThis.crossOriginIsolated === true;
+var mode = secure ? (isolated ? 'isolated' : 'secure') : 'plain';
+
+var showErr = function (msg) { document.getElementById('errors').textContent += msg + '\n'; };
+document.getElementById('envline').textContent =
+  'context: ' + mode + ' / storage will resolve to: ' + (secure ? 'opfs (elevated)' : 'idb (floor)');
+
+async function loadRuntime() {
+  if (mods) return mods;
+  var files = [
+    ['faults', '../kernel/faults.js'],
+    ['kernel', '../kernel/kernel.js'],
+    ['executor', '../managers/executor.js'],
+    ['storage', '../managers/storage.js'],
+    ['scheduler', '../managers/scheduler.js'],
+    ['transport', '../managers/transport.js'],
+    ['g1', './g1.js'],
+  ];
+  var loaded = {};
+  for (var i = 0; i < files.length; i++) {
+    try {
+      loaded[files[i][0]] = await import(files[i][1]);
+    } catch (err) {
+      showErr('LOAD FAILED: ' + files[i][1] + ' -> ' + ((err && (err.message || err.name)) || String(err)));
+      // Diagnostics: is the file reachable as bytes, and does the module
+      // mechanism work at all? Both answers print on this screen.
+      try {
+        var pr = await fetch(files[i][1], { cache: 'no-store' });
+        var pt = await pr.text();
+        showErr('  fetch probe: HTTP ' + pr.status + ' | type=' + pr.headers.get('content-type') + ' | length=' + pt.length + ' | starts: ' + pt.slice(0, 40).replace(/\n/g, ' '));
+      } catch (fe) {
+        showErr('  fetch probe FAILED: ' + ((fe && fe.message) || String(fe)));
+      }
+      try {
+        await import('data:text/javascript,export default 1');
+        showErr('  data-url module import: WORKS (module mechanism alive; the file itself is refused)');
+      } catch (de) {
+        showErr('  data-url module import FAILED: ' + ((de && de.message) || String(de)) + ' (module mechanism itself blocked)');
+      }
+      throw err;
+    }
+  }
+  mods = loaded;
+  document.getElementById('envline').textContent += ' / runtime loaded (' + files.length + ' files)';
+  return mods;
+}
+
+document.getElementById('go').onclick = async function () {
+  var out = document.getElementById('out');
+  out.innerHTML = '';
+  try {
+    var m = await loadRuntime();
+    var kernel = await m.kernel.createKernel();
+    // Managers mint themselves through the registry cell, the contract's own path.
+    var reg = kernel.bind(kernel.resolve({ need: ['registry'] }), { onEnvelope: function () {} });
+    var registrars = [m.executor.register, m.storage.register, m.scheduler.register, m.transport.register];
+    for (var i = 0; i < registrars.length; i++) {
+      var ds = [].concat(registrars[i](kernel));
+      for (var k = 0; k < ds.length; k++) {
+        var ack = await kernel.transmit(reg, { op: 'mint', body: ds[k] });
+        if (ack.op === 'fault') throw new Error('mint refused: ' + ds[k].id + ' (' + ack.body.detail + ')');
+      }
+    }
+    result = await m.g1.run(kernel, function (name, ok, detail) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + name + '</td><td class="' + (ok ? 'ok' : 'fail') + '">' + (ok ? 'PASS' : 'FAIL') + '</td><td>' + String(detail == null ? '' : detail) + '</td>';
+      out.appendChild(tr);
+    });
+    document.getElementById('verdict').textContent = result.pass ? 'G1: ALL STEPS PASS' : 'G1: FAILED';
+    document.getElementById('verdict').className = result.pass ? 'ok' : 'fail';
+    document.getElementById('save').disabled = false;
+  } catch (err) {
+    showErr('boot failed: ' + ((err && (err.stack || err.message)) || String(err)));
+    document.getElementById('verdict').textContent = 'G1: BOOT FAILED';
+    document.getElementById('verdict').className = 'fail';
+  }
+};
+
+document.getElementById('save').onclick = async () => {
+  const device = document.getElementById('device').value.trim() || 'unlabeled';
+  const payload = { kind: 'drive', project: 'MPR', phase: 'M4', device, mode, date: new Date().toISOString(), userAgent: navigator.userAgent, findings: result.log, pass: result.pass };
+  const v = document.getElementById('verdict');
+  try {
+    const r = await fetch('/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error('server said ' + r.status);
+    const j = await r.json();
+    v.textContent = (result.pass ? 'G1: ALL STEPS PASS' : 'G1: FAILED') + ' — saved raw/' + j.saved;
+  } catch (err) {
+    v.textContent = (result.pass ? 'G1: ALL STEPS PASS' : 'G1: FAILED') + ' — save failed (' + err.message + '), downloading instead';
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'drive-' + device + '-' + mode + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+};
+</script>
+</body>
+</html>

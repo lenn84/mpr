@@ -1,0 +1,252 @@
+{
+  "kind": "drive",
+  "project": "MPR",
+  "phase": "M7-G4-prep",
+  "device": "headless-node",
+  "mode": "plain",
+  "date": "2026-08-29T09:43:58.259Z",
+  "userAgent": "node v24.18.1 (pre-G4 verification vs committed 9e2a726: rehearsal + observer + downgrade + truncation + relay negatives + tls fence)",
+  "findings": [
+    {
+      "name": "one: kit composed 5 entries, budget 6/2/4",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "one [a] seeded WEIGHT-REVOKE entry chains",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] replica converged to 6 entries and verifies",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "one [a] peer anchor sits at the converged head",
+      "ok": true,
+      "detail": "aeNy9uqNAnSL"
+    },
+    {
+      "name": "one [a] message received rendered by PETNAME, not wire name",
+      "ok": true,
+      "detail": "bobby"
+    },
+    {
+      "name": "one [a] presence rendered by petname",
+      "ok": true,
+      "detail": "bobby"
+    },
+    {
+      "name": "one [a] no alarm in the healthy run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [a] downgrade probe posted (valid signature, plaintext payload)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [b] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [b] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [b] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [b] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "one [b] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [b] replica converged to 6 entries and verifies",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "one [b] peer anchor sits at the converged head",
+      "ok": true,
+      "detail": "aeNy9uqNAnSL"
+    },
+    {
+      "name": "one [b] message received rendered by PETNAME, not wire name",
+      "ok": true,
+      "detail": "captain"
+    },
+    {
+      "name": "one [b] presence rendered by petname",
+      "ok": true,
+      "detail": "captain"
+    },
+    {
+      "name": "one [b] no alarm in the healthy run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "one [b] plaintext downgrade REFUSED loudly (E2E required on this pair)",
+      "ok": true,
+      "detail": "fault: refused (plaintext payload refused: E2E is required on this pair)"
+    },
+    {
+      "name": "one [b] PLAINTEXT-LEAK never rendered",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "observer: all wire sends sealed except the one probe",
+      "ok": true,
+      "detail": "10/11"
+    },
+    {
+      "name": "observer: no chat plaintext in capture",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unrostered VALID signed hello refused (--open-roster inert)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "pass-bearing hello refused (tripwire)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "TLS private key NOT served",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CA key NOT served",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "/ca.pem serves the PUBLIC cert with x509 type",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ceremony page served",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two: kit composed 5 entries, budget 6/2/4",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [a] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [a] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [a] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [a] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "two [a] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [a] BLOCKING alarm raised on truncated peer replica",
+      "ok": true,
+      "detail": "peer lineage head is BEHIND its anchor: rollback or truncation"
+    },
+    {
+      "name": "two [a] own replica intact",
+      "ok": true,
+      "detail": "5 entries"
+    },
+    {
+      "name": "two [b] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [b] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [b] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [b] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "two [b] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "two [b] truncated device booted (local chain is validly shorter)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal keys and entries destroyed",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "pass": true
+}

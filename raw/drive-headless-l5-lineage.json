@@ -1,0 +1,322 @@
+{
+  "kind": "drive",
+  "project": "MPR",
+  "phase": "M7-L5",
+  "device": "headless-node",
+  "mode": "plain",
+  "date": "2026-08-26T17:47:53.950Z",
+  "userAgent": "node v24.18.1 (headless: lineage unit + ceremony rehearsal, two member processes + relay)",
+  "findings": [
+    {
+      "name": "unit: composed chain verifies (countersigns pending)",
+      "ok": true,
+      "detail": "head mkaT2qaIr2wz"
+    },
+    {
+      "name": "unit: strict verify REFUSES before countersigns",
+      "ok": true,
+      "detail": "entry 2: missing required signature"
+    },
+    {
+      "name": "unit: strict verify passes after both countersigns",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: budget conservation: 6 declared, 2 spent, 4 remaining",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "unit: roster written from the BIRTH entries",
+      "ok": true,
+      "detail": "2 rings"
+    },
+    {
+      "name": "unit: tampered body rejected",
+      "ok": true,
+      "detail": "entry 4: signature by xr8MvDg2 does not verify"
+    },
+    {
+      "name": "unit: re-typed entry rejected (signature covers type)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: re-timed entry rejected (signature covers ts)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: renumbered entry rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: broken chain link rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: reordered entries rejected",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: front-truncated replica rejected (no genesis declaration)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: stripped countersign rejected strict",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: INVITE-MINT by a provisional ring rejected",
+      "ok": true,
+      "detail": "entry 5: missing required signature"
+    },
+    {
+      "name": "unit: double-spent invite rejected",
+      "ok": true,
+      "detail": "entry 4: invite already spent"
+    },
+    {
+      "name": "unit: mayMint refuses a provisional ring",
+      "ok": true,
+      "detail": "provisional rings hold no spendable capacity; only genesis mints"
+    },
+    {
+      "name": "unit: mayMint allows genesis inside budget",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: third mint refused at exhausted budget (client-side, clause ii)",
+      "ok": true,
+      "detail": "invite budget exhausted"
+    },
+    {
+      "name": "unit: STOP/CONTEST/WEIGHT-REVOKE formats chain and verify",
+      "ok": true,
+      "detail": "9 entries"
+    },
+    {
+      "name": "unit: makeRun from a known head yields the suffix",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "unit: makeRun from an unknown head yields the full replica",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one: kit composed 5 entries, budget 6/2/4",
+      "ok": true,
+      "detail": "5 entries {\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "rehearsal: one: genesis key wiped after compose (vault stand-in)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [a] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [a] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [a] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [a] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "rehearsal: one [a] seeded STOP entry chains",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [a] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [a] replica converged to 6 entries and verifies",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "rehearsal: one [a] peer anchor sits at the converged head",
+      "ok": true,
+      "detail": "TaYsJ3d6gjxo"
+    },
+    {
+      "name": "rehearsal: one [a] message received rendered by PETNAME, not wire name",
+      "ok": true,
+      "detail": "bobby"
+    },
+    {
+      "name": "rehearsal: one [a] presence rendered by petname",
+      "ok": true,
+      "detail": "bobby"
+    },
+    {
+      "name": "rehearsal: one [a] no alarm in the healthy run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [b] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [b] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [b] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [b] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "rehearsal: one [b] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: one [b] replica converged to 6 entries and verifies",
+      "ok": true,
+      "detail": "6 entries"
+    },
+    {
+      "name": "rehearsal: one [b] peer anchor sits at the converged head",
+      "ok": true,
+      "detail": "TaYsJ3d6gjxo"
+    },
+    {
+      "name": "rehearsal: one [b] message received rendered by PETNAME, not wire name",
+      "ok": true,
+      "detail": "captain"
+    },
+    {
+      "name": "rehearsal: one [b] presence rendered by petname",
+      "ok": true,
+      "detail": "captain"
+    },
+    {
+      "name": "rehearsal: one [b] no alarm in the healthy run",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: unrostered VALID signed hello refused even under --open-roster (flag retired)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: pass-bearing hello still trips the wire, opaque refusal",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two: kit composed 5 entries, budget 6/2/4",
+      "ok": true,
+      "detail": "5 entries {\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "rehearsal: two: genesis key wiped after compose (vault stand-in)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [a] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [a] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [a] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [a] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "rehearsal: two [a] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [a] BLOCKING alarm raised on truncated peer replica",
+      "ok": true,
+      "detail": "peer lineage head is BEHIND its anchor: rollback or truncation"
+    },
+    {
+      "name": "rehearsal: two [a] own replica intact",
+      "ok": true,
+      "detail": "5 entries"
+    },
+    {
+      "name": "rehearsal: two [b] returned entries verify pre-countersign",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [b] own BIRTH present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [b] replica verifies strict after countersign exchange",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [b] invite accounting 6/2/4",
+      "ok": true,
+      "detail": "{\"declared\":6,\"spent\":2,\"remaining\":4}"
+    },
+    {
+      "name": "rehearsal: two [b] admitted by roster (chat booted)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: two [b] truncated device booted (local chain is validly shorter)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rehearsal: rehearsal keys and entries destroyed",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "pass": true
+}

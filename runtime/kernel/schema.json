@@ -1,0 +1,9 @@
+{
+  "descriptor": {
+    "required": ["id", "provides", "requires", "gates", "cost", "mailbox", "controlOps", "faults", "resolutions"],
+    "cost": ["low", "medium", "high"],
+    "drop": ["oldest", "reject"],
+    "idPattern": "^cell://[a-z0-9-]+/[a-z0-9-]+@[a-z0-9]+$",
+    "resolution": { "required": ["key", "gates", "cost"] }
+  }
+}
